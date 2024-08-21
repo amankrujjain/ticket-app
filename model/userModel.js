@@ -28,8 +28,9 @@ const UserSchema = new mongoose.Schema({
         required:false,
     },
     role:{
-        type:String,
-        enum:["admin","sub-admin","engineer","technician","regional-manager"],
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Role",
+        required:true,
         default:"technician"
     }
 });

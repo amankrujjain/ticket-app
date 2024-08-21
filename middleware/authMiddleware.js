@@ -2,7 +2,7 @@
 
 const jwt = require("jsonwebtoken");
 
-const authMiddleware = (role = [])=>{
+const authMiddleware = (roles = [])=>{
     return (req,res,next)=>{
 
         // Taking token from the cookies
@@ -21,9 +21,23 @@ const authMiddleware = (role = [])=>{
         // verifying the token
 
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET)
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            req.user = decoded;
+
+            if(roles.length && !roles.includes(req.user.role)){
+                return res.status(403).json({
+                    success: false,
+                    message:"Forbidden: Your do not have access to this resource"
+                })
+            };
+            next();
         } catch (error) {
-            
-        }
-    }
-}
+            return rs.status(401).json({
+                success:false,
+                message:"Invalid token"
+            });
+        };
+    };
+};
+
+module.exports = authMiddleware;

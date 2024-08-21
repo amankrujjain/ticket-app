@@ -36,3 +36,9 @@ exports.loginValidator = [
     // .matches(/\d/).withMessage("Password must contain at least 1 number")
     // .matches(/^[ !@#\$%\^\&*\)\(+=._-]+$/g).withMessage("Password must contain 1 symbol")
 ];
+
+exports.roleValidator = [
+    check("name")
+    .notEmpty().withMessage("Name is required")
+    .isString().withMessage("Role name can only be alphabet")
+];

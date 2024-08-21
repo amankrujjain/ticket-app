@@ -1,6 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser")
+const authRoute = require("./routes/authRoute");
+const roleRoute = require("./routes/roleRoute");
 
 const dotenv = require("dotenv");
 
@@ -10,9 +12,12 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser())
 
-
-const authRoute = require("./routes/authRoute");
+// Auth route
 app.use("/api", authRoute);
+
+// 
+
+app.use("/api", roleRoute);
 
 const PORT = process.env.PORT || 5000
 mongoose.connect(process.env.MONGODB_URL).then(()=>{

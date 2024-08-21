@@ -2,6 +2,7 @@ const User = require("../model/userModel");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken");
+const Role = require("../model/roleModel");
 
 const generateToken = (user)=>{
     return jwt.sign({id: user._id, role:user.role}, process.env.JWT_SECRET,{
@@ -33,6 +34,16 @@ const registerUser = async(req,res)=>{
             });
         };
 
+        // Finding the role of the user
+
+        const roleObj = await Role.findOne({name:role});
+        if(!roleObj){
+            return res.status(400).json({
+                success: false,
+                message:"Invalid role provided"
+            })
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
         
         const newUser = new User({
@@ -41,9 +52,10 @@ const registerUser = async(req,res)=>{
             phone,
             employee_id,
             password:hashedPassword,
-            role
+            role: roleObj._id
         });
         await newUser.save();
+
         return res.status(200).json({
             success: true,
             message:"Registered successfully",
