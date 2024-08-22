@@ -56,18 +56,11 @@ const registerUser = async(req,res)=>{
             role: roleObj._id
         });
         await newUser.save();
-
+        await newUser.populate('role')
         return res.status(201).json({
             success: true,
             message:"Registered successfully",
-            data: {
-                id: newUser._id,
-                name: newUser.name,
-                email: newUser.email,
-                phone: newUser.phone,
-                employee_id: newUser.employee_id,
-                role: roleObj.name 
-            }
+            data: newUser
         })
 
     } catch (error) {
@@ -148,7 +141,36 @@ const loginUser = async (req,res)=>{
     };
 };
 
+// Protected profile route
+
+const getProfile = async(req,res) =>{
+    try {
+        const userId = req.user.id;
+
+        const user = await User.findById(userId).select("-password").populate("role");
+
+        if(!user){
+            return res.status(404).json({
+                success:false,
+                message:"No valid user found"
+            });
+        };
+
+        return res.status(200).json({
+            success:true,
+            data: user
+        })
+    } catch (error) {
+        console.log("Error while fetching profile:", error);
+        return res.status(500).json({
+            success: false,
+            message:"An error occured while fetching the profile"
+        })
+    }
+}
+
 module.exports = {
     registerUser,
-    loginUser
+    loginUser,
+    getProfile
 }

@@ -42,3 +42,9 @@ exports.roleValidator = [
     .notEmpty().withMessage("Name is required")
     .isString().withMessage("Role name can only be alphabet")
 ];
+
+exports.stateValidator = [
+    check("name")
+    .notEmpty().withMessage("Name is required")
+    .isString().withMessage("Name can only  be alphabet")
+]
