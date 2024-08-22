@@ -8,7 +8,7 @@ const authController = require("../controller/authController");
 const {registerValidator, loginValidator} = require("../helpers/validate");
 const authMiddleware = require("../middleware/authMiddleware");
 
-router.post('/register',authMiddleware(['admin']), registerValidator, authController.registerUser);
+router.post('/register', registerValidator, authController.registerUser);
 router.post("/login", loginValidator, authController.loginUser);
 
 

@@ -16,7 +16,7 @@ const createRole = async (req,res)=>{
         };
 
         const {name} = req.body;
-        const existingRole  = await Role.findOne({name});
+        const existingRole  = await Role.findOne({name, is_active: true});
         if(existingRole){
             return res.status(409).json({
                 success:false,
@@ -47,7 +47,26 @@ const createRole = async (req,res)=>{
 
 const getRoles = async (req,res)=>{
     try {
-        const roles = await Role.find();
+        const roles = await Role.find({is_active:true});
+        return res.status(200).json({
+            success:true,
+            role: roles
+        });
+    } catch (error) {
+        console.log("Error while fething role:",error);
+
+        return res.status(500).json({
+            success:false,
+            message:"An error occured while fetching the roles",
+        });
+    };
+};
+
+// Deactivated roles
+
+const getDeactivatedRoles = async (req,res)=>{
+    try {
+        const roles = await Role.find({is_active:false});
         return res.status(200).json({
             success:true,
             role: roles
@@ -67,10 +86,7 @@ const updateRole = async(req,res)=>{
         const {id} = req.params;
         const {name} = req.body;
 
-        const role = await Role.findById({
-            id,
-            name
-        });
+        const role = await Role.findByIdAndUpdate(id,{name},{new:true});
 
         if(!role){
             return res.status(404).json({
@@ -83,13 +99,63 @@ const updateRole = async(req,res)=>{
             success:true,
             message:"Role is updated successfully",
             role: role
-        })
+        });
     } catch (error) {
+        console.log("Error while updating role:",error);
+        return res.status(500).json({
+            success: false,
+            message:"An error occured while updating role."
+        })
+    };
+};
+
+// const deleteRole
+
+const deleteRole = async (req,res) => {
+    try {
+        const {id} = req.params;
+
+        const role = await Role.findById(id);
+
+        if(!role){
+            return res.status(404).json({
+                success: false,
+                message:"Role not found."
+            });
+        };
+
+        // checking whether the role is already deleted or not
         
+        if(!role.is_active){
+            return res.status(409).json({
+                success: false,
+                message: "Role already deleted"
+            });
+        };
+
+        role.is_active = false;
+
+        await role.save();
+        
+        return res.status(200).json({
+            success:true,
+            message:"Role deleted successfully",
+            data: role
+        });
+
+    } catch (error) {
+        console.log("Error while deleting role:", error);
+        return res.status(500).json({
+            success: false,
+            message:"An error occured while deleteing the role."
+        })
     }
 }
 
 module.exports = {
     createRole,
-    getRoles
+    getRoles,
+    updateRole,
+    getDeactivatedRoles,
+    deleteRole
 }

@@ -29,9 +29,12 @@ const UserSchema = new mongoose.Schema({
     },
     role:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"Role",
+        ref:"UserRole",
         required:true,
-        default:"technician"
+    },
+    is_active:{
+        type:Boolean,
+        default: true
     }
 });
 

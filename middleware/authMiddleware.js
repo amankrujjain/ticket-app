@@ -1,9 +1,10 @@
 // This is the middleware that check if the logged in user is admin or not
 
 const jwt = require("jsonwebtoken");
+const Role = require("../model/roleModel");
 
 const authMiddleware = (roles = [])=>{
-    return (req,res,next)=>{
+    return async(req,res,next)=>{
 
         // Taking token from the cookies
 
@@ -24,7 +25,18 @@ const authMiddleware = (roles = [])=>{
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             req.user = decoded;
 
-            if(roles.length && !roles.includes(req.user.role)){
+            // fetching the user's role details
+
+            const role = await Role.findById(req.user.role);
+
+            if(!role){
+                return res.status(403).json({
+                    success: false,
+                    message: "Forbidden: Role not found."
+                });
+            }
+
+            if(roles.length && !roles.includes(role.name)){
                 return res.status(403).json({
                     success: false,
                     message:"Forbidden: Your do not have access to this resource"
@@ -32,7 +44,8 @@ const authMiddleware = (roles = [])=>{
             };
             next();
         } catch (error) {
-            return rs.status(401).json({
+            // console.log("Invalid token error:", error)
+            return res.status(401).json({
                 success:false,
                 message:"Invalid token"
             });

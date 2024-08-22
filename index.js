@@ -15,7 +15,7 @@ app.use(cookieParser())
 // Auth route
 app.use("/api", authRoute);
 
-// 
+// Role route
 
 app.use("/api", roleRoute);
 

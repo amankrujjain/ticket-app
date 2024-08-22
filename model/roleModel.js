@@ -5,6 +5,10 @@ const RoleSchema = new mongoose.Schema({
         type:String,
         unique:true,
         required:true
+    },
+    is_active:{
+        type: Boolean,
+        default: true
     }
 });
 

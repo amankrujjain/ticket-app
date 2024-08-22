@@ -5,11 +5,10 @@ const jwt = require("jsonwebtoken");
 const Role = require("../model/roleModel");
 
 const generateToken = (user)=>{
-    return jwt.sign({id: user._id, role:user.role}, process.env.JWT_SECRET,{
+    return jwt.sign({id: user._id, role:user.role._id}, process.env.JWT_SECRET,{
         expiresIn:'2h',
     })
 }
-
 
 const registerUser = async(req,res)=>{
     try {
@@ -22,6 +21,8 @@ const registerUser = async(req,res)=>{
             });
         };
         const {name, email, password, employee_id, phone, role} = req.body;
+
+        // console.log("Body:", req.body)
 
         const user = await User.findOne({
             $or: [{email: email}, {employee_id: employee_id}]
@@ -56,10 +57,17 @@ const registerUser = async(req,res)=>{
         });
         await newUser.save();
 
-        return res.status(200).json({
+        return res.status(201).json({
             success: true,
             message:"Registered successfully",
-            data: newUser
+            data: {
+                id: newUser._id,
+                name: newUser.name,
+                email: newUser.email,
+                phone: newUser.phone,
+                employee_id: newUser.employee_id,
+                role: roleObj.name 
+            }
         })
 
     } catch (error) {
@@ -88,7 +96,9 @@ const loginUser = async (req,res)=>{
 
         const user = await User.findOne({
             $or: [{email:identifier}, {employee_id: identifier}]
-        });
+        }).populate('role');
+
+        // console.log("User role:", user.role)
 
         if(!user){
             return res.status(400).json({
