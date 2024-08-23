@@ -47,4 +47,15 @@ exports.stateValidator = [
     check("name")
     .notEmpty().withMessage("Name is required")
     .isString().withMessage("Name can only  be alphabet")
-]
+];
+
+exports.cityValidator = [
+    check("name")
+    .notEmpty().withMessage("City name is required")
+    .isString().withMessage("Invalid city format"),
+
+    check("state")
+    .notEmpty().withMessage("State ID is required")
+    .bail()
+    .isString().withMessage("State ID must be a string")
+];

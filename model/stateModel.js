@@ -5,6 +5,10 @@ const stateModel = new mongoose.Schema({
         type:String,
         require: true,
         unique:true
+    },
+    is_active:{
+        type: Boolean,
+        default: true
     }
 });
 
