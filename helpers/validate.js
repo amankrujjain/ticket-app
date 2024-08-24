@@ -59,3 +59,79 @@ exports.cityValidator = [
     .bail()
     .isString().withMessage("State ID must be a string")
 ];
+
+exports.updateCityValidator = [
+    check("name")
+        .optional()
+        .isString().withMessage("Invalid city format"),
+
+    check("state")
+        .optional()
+        .isString().withMessage("State ID must be a string")
+        .bail()
+        .custom(value => {
+            return mongoose.Types.ObjectId.isValid(value);
+        }).withMessage("Invalid State ID")
+];
+
+exports.createCentreValidator = [
+    check("name")
+        .notEmpty().withMessage("Centre name is required")
+        .isString().withMessage("Invalid centre name format"),
+
+    check("state")
+        .notEmpty().withMessage("State ID is required")
+        .bail()
+        .isString().withMessage("State ID must be a string")
+        .bail()
+        .custom(value => {
+            return mongoose.Types.ObjectId.isValid(value);
+        }).withMessage("Invalid State ID"),
+
+    check("city")
+        .notEmpty().withMessage("City ID is required")
+        .bail()
+        .isString().withMessage("City ID must be a string")
+        .bail()
+        .custom(value => {
+            return mongoose.Types.ObjectId.isValid(value);
+        }).withMessage("Invalid City ID"),
+
+    check("district")
+        .notEmpty().withMessage("District is required")
+        .isString().withMessage("Invalid district format"),
+
+    check("pincode")
+        .notEmpty().withMessage("Pincode is required")
+        .isString().withMessage("Pincode must be a string")
+        .isLength({ min: 5, max: 6 }).withMessage("Pincode must be 5-6 digits long"),
+
+];
+
+exports.updateCentreValidator = [
+    check("name")
+        .optional()
+        .isString().withMessage("Invalid centre name format"),
+
+    check("state")
+        .optional()
+        .isString().withMessage("State ID must be a string")
+        .bail()
+        .custom(value => mongoose.Types.ObjectId.isValid(value)).withMessage("Invalid State ID"),
+
+    check("city")
+        .optional()
+        .isString().withMessage("City ID must be a string")
+        .bail()
+        .custom(value => mongoose.Types.ObjectId.isValid(value)).withMessage("Invalid City ID"),
+
+    check("district")
+        .optional()
+        .isString().withMessage("Invalid district format"),
+
+    check("pincode")
+        .optional()
+        .isString().withMessage("Pincode must be a string")
+        .isLength({ min: 5, max: 6 }).withMessage("Pincode must be 5-6 digits long"),
+
+]

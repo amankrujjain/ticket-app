@@ -3,8 +3,9 @@ const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser")
 const authRoute = require("./routes/authRoute");
 const roleRoute = require("./routes/roleRoute");
-const stateRoute = require("./routes/stateRoute")
-const cityRoute = require("./routes/cityRoute")
+const stateRoute = require("./routes/stateRoute");
+const cityRoute = require("./routes/cityRoute");
+const centreRoute = require("./routes/centreRoute");
 
 const dotenv = require("dotenv");
 
@@ -19,6 +20,7 @@ app.use("/api", authRoute);
 app.use("/api", roleRoute);
 app.use("/api", stateRoute);
 app.use("/api", cityRoute);
+app.use("/api", centreRoute);
 
 
 
