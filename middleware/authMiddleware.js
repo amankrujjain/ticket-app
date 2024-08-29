@@ -1,4 +1,4 @@
-// This is the middleware that check if the logged in user is admin or not
+// This is the middleware that checks the role of loggedin user
 
 const jwt = require("jsonwebtoken");
 const Role = require("../model/roleModel");

@@ -6,6 +6,7 @@ const roleRoute = require("./routes/roleRoute");
 const stateRoute = require("./routes/stateRoute");
 const cityRoute = require("./routes/cityRoute");
 const centreRoute = require("./routes/centreRoute");
+const issueRoute = require("./routes/issueRoute");
 
 const dotenv = require("dotenv");
 
@@ -21,6 +22,7 @@ app.use("/api", roleRoute);
 app.use("/api", stateRoute);
 app.use("/api", cityRoute);
 app.use("/api", centreRoute);
+app.use("/api", issueRoute)
 
 
 

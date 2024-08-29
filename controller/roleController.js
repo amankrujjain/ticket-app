@@ -45,7 +45,7 @@ const createRole = async (req,res)=>{
 };
 
 
-const getRoles = async (req,res)=>{
+const getRoles = async (_,res)=>{
     try {
         const roles = await Role.find({is_active:true});
         return res.status(200).json({

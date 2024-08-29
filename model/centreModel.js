@@ -7,9 +7,9 @@ const centreSchema = new mongoose.Schema({
         required: true
     },
     state:{
-        type: mongoose.Schema.Types.ObjectId,
+        type:mongoose.Schema.Types.ObjectId,
         ref:"state",
-        required: true
+        required:true
     },
     city:{
         type: mongoose.Schema.Types.ObjectId,
@@ -19,6 +19,9 @@ const centreSchema = new mongoose.Schema({
     district:{
         type: String,
         required: true
+    },
+    full_address:{
+        type: String,
     },
     pincode:{
         type: String,

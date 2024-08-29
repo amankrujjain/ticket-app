@@ -1,4 +1,5 @@
 const {check} = require("express-validator");
+const mongoose = require("mongoose")
 
 exports.registerValidator = [
     check("name")
@@ -51,13 +52,26 @@ exports.stateValidator = [
 
 exports.cityValidator = [
     check("name")
-    .notEmpty().withMessage("City name is required")
-    .isString().withMessage("Invalid city format"),
+        .notEmpty().withMessage("City name is required")
+        .isString().withMessage("Invalid city format"),
 
     check("state")
-    .notEmpty().withMessage("State ID is required")
-    .bail()
-    .isString().withMessage("State ID must be a string")
+        .notEmpty().withMessage("State ID is required")
+        .bail()
+        .isString().withMessage("State ID must be a string")
+        .bail()
+        .custom(value => {
+            // Check if the value is a valid 24-character hex string
+            if (!mongoose.Types.ObjectId.isValid(value)) {
+                throw new Error("State ID format invalid try to provide a valid format of tate ID");
+            }
+            return true;
+        })
+        .bail()
+        .custom(value => {
+            return mongoose.Types.ObjectId.isValid(value);
+        }).withMessage("Invalid State ID")
+
 ];
 
 exports.updateCityValidator = [
@@ -68,6 +82,12 @@ exports.updateCityValidator = [
     check("state")
         .optional()
         .isString().withMessage("State ID must be a string")
+        .bail()
+        .custom( value =>{
+            if(!mongoose.Types.ObjectId.isValid(value)){
+                throw new Error("State ID format invalid try to provide a valid format of state ID")
+            }
+        })
         .bail()
         .custom(value => {
             return mongoose.Types.ObjectId.isValid(value);
@@ -84,6 +104,14 @@ exports.createCentreValidator = [
         .bail()
         .isString().withMessage("State ID must be a string")
         .bail()
+
+        // checking the valid hex format of the ID provided in the body
+        .custom( value =>{
+            if(!mongoose.Types.ObjectId.isValid(value)){
+                throw new Error("State ID format invalid try to provide a valid format of state ID")
+            }
+        })
+        .bail()
         .custom(value => {
             return mongoose.Types.ObjectId.isValid(value);
         }).withMessage("Invalid State ID"),
@@ -92,6 +120,12 @@ exports.createCentreValidator = [
         .notEmpty().withMessage("City ID is required")
         .bail()
         .isString().withMessage("City ID must be a string")
+        .bail()
+        .custom( value =>{
+            if(!mongoose.Types.ObjectId.isValid(value)){
+                throw new Error("City ID format invalid try to provide a valid format of city ID")
+            }
+        })
         .bail()
         .custom(value => {
             return mongoose.Types.ObjectId.isValid(value);
@@ -105,6 +139,7 @@ exports.createCentreValidator = [
         .notEmpty().withMessage("Pincode is required")
         .isString().withMessage("Pincode must be a string")
         .isLength({ min: 5, max: 6 }).withMessage("Pincode must be 5-6 digits long"),
+        
 
 ];
 
@@ -134,4 +169,10 @@ exports.updateCentreValidator = [
         .isString().withMessage("Pincode must be a string")
         .isLength({ min: 5, max: 6 }).withMessage("Pincode must be 5-6 digits long"),
 
-]
+];
+
+exports.createIssueValidator= [
+    check("name")
+    .isString().withMessage("Invalid issue name type")
+    .isEmpty().withMessage("Issue name is mandetory")
+];

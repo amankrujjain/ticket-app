@@ -39,7 +39,7 @@ const registerUser = async(req,res)=>{
 
         const roleObj = await Role.findOne({name:role});
         if(!roleObj){
-            return res.status(400).json({
+            return res.status(404).json({
                 success: false,
                 message:"Invalid role provided"
             })
