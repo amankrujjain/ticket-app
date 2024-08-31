@@ -1,6 +1,7 @@
 
 const Issue = require("../model/issueModel");
 const {validationResult} = require("express-validator");
+const mongoose = require("mongoose")
 
 const createIssue = async(req,res)=>{
     try {
@@ -16,7 +17,8 @@ const createIssue = async(req,res)=>{
 
         const {name} = req.body;
 
-        const existingIssue = await Issue.findOne({name, is_active : true});
+        const existingIssue = await Issue.findOne({name});
+
 
         if(existingIssue){
             return res.status(409).json({
@@ -25,7 +27,7 @@ const createIssue = async(req,res)=>{
             });
         };
 
-        const newIssue = await new Issue({
+        const newIssue = new Issue({
             name
         });
 
@@ -52,7 +54,8 @@ const getIssue = async(_,res)=>{
         if( issues){
             return res.status(200).json({
                 success: true,
-                message:"Issues fetched successfully"
+                message:"Issues fetched successfully",
+                data: issues
             });
         };
     } catch (error) {
@@ -68,7 +71,7 @@ const getIssueById = async(req,res)=>{
     try {
         const {id} = req.params;
         
-        const issue = await Issue.findOne(id);
+        const issue = await Issue.findById(id);
 
         if(!issue){
             return res.status(404).json({
@@ -94,7 +97,7 @@ const getIssueById = async(req,res)=>{
 const updateIssue = async(req,res)=>{
     try {
         const {id} = req.params;
-        const name = req.body;
+        const {name} = req.body;
 
         const issue = await Issue.findByIdAndUpdate(id, {name},{new:true});
 
@@ -119,48 +122,56 @@ const updateIssue = async(req,res)=>{
     };
 };
 
-const deleteIssue = async(req,res)=>{
+const deleteIssue = async (req, res) => {
     try {
-        const {id} = req.body;
+        const { id } = req.params;
 
-        const issue = await Issue.findOne(id);
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid or missing issue ID"
+            });
+        }
 
-        if(!issue){
+        const issue = await Issue.findById(id);
+ 
+
+        if (!issue) {
             return res.status(404).json({
                 success: false,
-                message:'No vaild issues were found'
+                message: 'No valid issue found'
             });
-        };
+        }
 
-        if(!issue.is_active){
+        if (!issue.is_active) {
             return res.status(409).json({
-                success:false,
-                message:"Issue alreday deleted"
+                success: false,
+                message: "Issue already deleted"
             });
-        };
+        }
 
-        issue.is_active = false;
+        issue.is_active = false;  // Soft delete by setting is_active to false
         await issue.save();
 
         return res.status(200).json({
             success: true,
-            message:"Issue updated successfully",
+            message: "Issue deleted successfully",
             data: issue
         });
     } catch (error) {
-        console.log("Error occured while updating issues:", error);
+        console.log("Error occurred while deleting the issue:", error);
         return res.status(500).json({
             success: false,
-            message:"An error occured while processing your request"
+            message: "An error occurred while processing your request"
         });
-    };
+    }
 };
 
 const reactivateIssues = async(req,res)=>{
     try {
-        const {id} = req.body;
+        const {id} = req.params;
 
-        const issue = await Issue.findOne(id);
+        const issue = await Issue.findById(id);
 
         if(issue.is_active){
             return res.status(409).json({

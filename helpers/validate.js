@@ -104,32 +104,24 @@ exports.createCentreValidator = [
         .bail()
         .isString().withMessage("State ID must be a string")
         .bail()
-
-        // checking the valid hex format of the ID provided in the body
-        .custom( value =>{
-            if(!mongoose.Types.ObjectId.isValid(value)){
-                throw new Error("State ID format invalid try to provide a valid format of state ID")
-            }
-        })
-        .bail()
         .custom(value => {
-            return mongoose.Types.ObjectId.isValid(value);
-        }).withMessage("Invalid State ID"),
+            if (!mongoose.Types.ObjectId.isValid(value)) {
+                throw new Error("State ID format is invalid. Please provide a valid ObjectId.");
+            }
+            return true;
+        }),
 
     check("city")
         .notEmpty().withMessage("City ID is required")
         .bail()
         .isString().withMessage("City ID must be a string")
         .bail()
-        .custom( value =>{
-            if(!mongoose.Types.ObjectId.isValid(value)){
-                throw new Error("City ID format invalid try to provide a valid format of city ID")
-            }
-        })
-        .bail()
         .custom(value => {
-            return mongoose.Types.ObjectId.isValid(value);
-        }).withMessage("Invalid City ID"),
+            if (!mongoose.Types.ObjectId.isValid(value)) {
+                throw new Error("City ID format is invalid. Please provide a valid ObjectId.");
+            }
+            return true;
+        }),
 
     check("district")
         .notEmpty().withMessage("District is required")
@@ -139,8 +131,9 @@ exports.createCentreValidator = [
         .notEmpty().withMessage("Pincode is required")
         .isString().withMessage("Pincode must be a string")
         .isLength({ min: 5, max: 6 }).withMessage("Pincode must be 5-6 digits long"),
-        
 
+    check("full_address")
+        .notEmpty().withMessage("Full address is required")
 ];
 
 exports.updateCentreValidator = [
@@ -174,5 +167,41 @@ exports.updateCentreValidator = [
 exports.createIssueValidator= [
     check("name")
     .isString().withMessage("Invalid issue name type")
-    .isEmpty().withMessage("Issue name is mandetory")
+    .notEmpty().withMessage("Issue name is mandetory")
 ];
+
+exports.updateIssueValidator= [
+    check("name")
+    .isString().withMessage("Invalid issue name type")
+    .notEmpty().withMessage("Issue name is mandetory")
+];
+
+exports.createReasonValidation = [
+    check("name")
+    .isString().withMessage("Invalid issue name type")
+    .notEmpty().withMessage("Issue name is mandetory"),
+
+    check("issue")
+    .notEmpty().withMessage("issue ID is required")
+    .bail()
+    .isString().withMessage("Issue ID must be a string")
+    .bail()
+    .custom(value => {
+        return mongoose.Types.ObjectId.isValid(value);
+    }).withMessage("Invalid Issue ID"),
+
+    check("tat")
+    .isNumeric().withMessage("TAT should only be a number")
+    .notEmpty().withMessage("TAT is required")
+];
+
+exports.machineValidator = [
+    check("machine_serial_number").notEmpty().withMessage("Machine serial number is required."),
+    check("purchase_from").notEmpty().withMessage("Purchase source is required."),
+    check("centre")
+    .notEmpty()
+    .withMessage("Centre ID is required.")
+    .custom(value => {
+        return mongoose.Types.ObjectId.isValid(value);
+    }).withMessage("Invalid Centre ID"),
+]

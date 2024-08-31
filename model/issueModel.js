@@ -7,10 +7,11 @@ const issueModel = new mongoose.Schema({
         unique: true
     },
     is_active:{
-        type: Boolean
+        type: Boolean,
+        default: true
     }
 });
 
-const issue = new mongoose.model("issues", issueModel);
+const issue = mongoose.model("issues", issueModel);
 
 module.exports = issue;
