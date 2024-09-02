@@ -32,6 +32,15 @@ const UserSchema = new mongoose.Schema({
         ref:"UserRole",
         required:true,
     },
+    centre:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "centre",
+        required: true
+    },
+    is_logged_in:{
+        type: Boolean,
+        default: false
+    },
     is_active:{
         type:Boolean,
         default: true

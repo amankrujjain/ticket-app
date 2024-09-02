@@ -1,4 +1,5 @@
 const User = require("../model/userModel");
+const Centre = require("../model/centreModel");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken");
@@ -20,7 +21,7 @@ const registerUser = async(req,res)=>{
                 error: errors.array()
             });
         };
-        const {name, email, password, employee_id, phone, role} = req.body;
+        const {name, email, password, employee_id, phone, role, centre} = req.body;
 
         // console.log("Body:", req.body)
 
@@ -43,6 +44,13 @@ const registerUser = async(req,res)=>{
                 success: false,
                 message:"Invalid role provided"
             })
+        };
+        const centreObj = await Centre.findById(centre).populate('city').populate('state');
+        if (!centreObj) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid centre provided.",
+            });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -52,6 +60,7 @@ const registerUser = async(req,res)=>{
             email,
             phone,
             employee_id,
+            centre: centreObj,
             password:hashedPassword,
             role: roleObj._id
         });
@@ -89,7 +98,13 @@ const loginUser = async (req,res)=>{
 
         const user = await User.findOne({
             $or: [{email:identifier}, {employee_id: identifier}]
-        }).populate('role');
+        }).populate('role').populate({
+            path: 'centre',
+            populate: [
+                { path: 'state' },
+                { path: 'city' }
+            ]
+        });;
 
         // console.log("User role:", user.role)
 
@@ -109,7 +124,8 @@ const loginUser = async (req,res)=>{
                 message:"Invalid employee ID/email or password"
             });
         };
-
+        user.is_logged_in = true;
+        await user.save()
         // generating token if user is found or logged in with correct credentials
         const token = generateToken(user);
 
@@ -129,7 +145,9 @@ const loginUser = async (req,res)=>{
                 email:user.email,
                 employee_id: user.employee_id,
                 role: user.role,
-                token: token
+                centre: user.centre,
+                token: token,
+                is_logged_in: user.is_logged_in
             },
         });
     } catch (error) {
@@ -140,6 +158,33 @@ const loginUser = async (req,res)=>{
         });
     };
 };
+
+const logoutUser = async (req, res) => {
+    try {
+
+        const userId = await req.user.id
+        // Clear the token cookie
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production" || true, // Same settings as when the token is set
+            sameSite: 'Strict'
+        });
+
+        await User.findByIdAndUpdate(userId, {is_logged_in: false})
+
+        return res.status(200).json({
+            success: true,
+            message: "Logged out successfully"
+        });
+    } catch (error) {
+        console.log("Error during logout:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while logging out"
+        });
+    }
+};
+
 
 // Protected profile route
 
@@ -172,5 +217,6 @@ const getProfile = async(req,res) =>{
 module.exports = {
     registerUser,
     loginUser,
-    getProfile
+    getProfile,
+    logoutUser
 }

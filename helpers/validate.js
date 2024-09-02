@@ -204,4 +204,16 @@ exports.machineValidator = [
     .custom(value => {
         return mongoose.Types.ObjectId.isValid(value);
     }).withMessage("Invalid Centre ID"),
-]
+];
+
+exports.createTicketValidator = [
+    check("description")
+        .notEmpty().withMessage("Description is required")
+        .isString().withMessage("Description must be a string"),
+    check("reasonId")
+        .notEmpty().withMessage("Reason ID is required")
+        .isMongoId().withMessage("Invalid Reason ID"),
+    check("machineId")
+        .notEmpty().withMessage("Machine ID is required")
+        .isMongoId().withMessage("Invalid Machine ID"),
+];
