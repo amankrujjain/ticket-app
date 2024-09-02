@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const cookieParser = require("cookie-parser")
+const cookieParser = require("cookie-parser");
 const authRoute = require("./routes/authRoute");
 const roleRoute = require("./routes/roleRoute");
 const stateRoute = require("./routes/stateRoute");
@@ -12,8 +12,8 @@ const machineRoute = require("./routes/machineRoute");
 const ticketRoute = require("./routes/ticketRoute");
 
 const path = require("path");
-const cors = require('cors');
-const helmet = require('helmet');
+const cors = require("cors");
+const helmet = require("helmet");
 
 const dotenv = require("dotenv");
 
@@ -21,17 +21,33 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(cookieParser())
-app.use(helmet())
+app.use(cookieParser());
+app.use(helmet());
 
-app.use(cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true,
-}));
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (origin === process.env.FRONTEND_URL || !origin) {
+      // Allow localhost:3000 or undefined origins (like Postman)
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+};
+app.use(
+  cors(corsOptions)
+);
 
 //serving the static files
-app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use("/public", express.static(path.join(__dirname, "public")));
 
+app.use(express.static(path.join(__dirname, "../client/build")));
+
+// The "catchall" handler: for any request that doesn't match one of the API routes, send back React's index.html file.
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname + "/../client/build/index.html"));
+});
 // Routes
 app.use("/api", authRoute);
 app.use("/api", roleRoute);
@@ -45,21 +61,23 @@ app.use("/api", ticketRoute);
 
 // Error handling middleware for unhandles errors
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        success: false,
-        message: "An internal server error occurred",
-    });
+  console.error(err.stack);
+  res.status(500).json({
+    success: false,
+    message: "An internal server error occurred",
+  });
 });
 
-const PORT = process.env.PORT || 5000
-mongoose.connect(process.env.MONGODB_URL).then(()=>{
-    console.log("Mongo DB connected")
-}).catch((error)=>{
-    console.log("MongoDB connection :", error)
+const PORT = process.env.PORT || 5000;
+mongoose
+  .connect(process.env.MONGODB_URL)
+  .then(() => {
+    console.log("Mongo DB connected");
+  })
+  .catch((error) => {
+    console.log("MongoDB connection :", error);
+  });
+
+app.listen(PORT, () => {
+  console.log(`Server is running on ${PORT}`);
 });
-
-
-app.listen(PORT,()=>{
-    console.log(`Server is running on ${PORT}`)
-})
