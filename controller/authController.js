@@ -192,7 +192,13 @@ const getProfile = async(req,res) =>{
     try {
         const userId = req.user.id;
 
-        const user = await User.findById(userId).select("-password").populate("role");
+        const user = await User.findById(userId).select("-password").populate("role").populate({
+            path: "centre",
+            populate: [
+                { path: "state" },
+                { path: "city"}
+            ]
+        });;
 
         if(!user){
             return res.status(404).json({

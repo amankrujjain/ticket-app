@@ -44,10 +44,6 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 
 app.use(express.static(path.join(__dirname, "../client/build")));
 
-// The "catchall" handler: for any request that doesn't match one of the API routes, send back React's index.html file.
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname + "/../client/build/index.html"));
-});
 // Routes
 app.use("/api", authRoute);
 app.use("/api", roleRoute);
