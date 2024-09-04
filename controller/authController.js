@@ -141,6 +141,7 @@ const loginUser = async (req,res)=>{
             message: "LoggedIn successfully",
             user:{
                 id: user._id,
+                phone:user.phone,
                 name: user.name,
                 email:user.email,
                 employee_id: user.employee_id,

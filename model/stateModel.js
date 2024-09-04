@@ -6,6 +6,10 @@ const stateModel = new mongoose.Schema({
         require: true,
         unique:true
     },
+    created_on: {
+        type: Date,
+        default: Date.now
+    },
     is_active:{
         type: Boolean,
         default: true

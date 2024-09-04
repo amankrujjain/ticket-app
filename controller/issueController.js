@@ -11,7 +11,7 @@ const createIssue = async(req,res)=>{
             return res.status(400).json({
                 success: false,
                 message: "Validation failed",
-                errors: errors
+                errors: errors.array()
             });
         };
 

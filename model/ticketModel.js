@@ -35,6 +35,10 @@ const ticketSchema = new mongoose.Schema({
     generatedDate: {
         type: Date 
     },
+    stage: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Stage"
+    },
     is_active: {
         type: Boolean,
         default: true

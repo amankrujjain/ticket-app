@@ -217,3 +217,10 @@ exports.createTicketValidator = [
         .notEmpty().withMessage("Machine ID is required")
         .isMongoId().withMessage("Invalid Machine ID"),
 ];
+
+exports.stageValidator = [
+    check('name')
+    .notEmpty().withMessage(" Stage name is required")
+    .isString().withMessage("Stage name must be in alphabet format")
+];
+
