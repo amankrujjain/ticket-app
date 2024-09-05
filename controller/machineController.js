@@ -90,7 +90,45 @@ const getMachines = async (_, res) => {
     }
 };
 
+// Controller logic
+const getMachinesByCentre = async (req, res) => {
+    try {
+        const centreId = req.params.centreId;
+
+        const centreObj = await Centre.findById(centreId).populate('city').populate('state');
+        if (!centreObj) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid centre provided."
+            });
+        }
+
+        const machines = await Machine.find({ centre: centreId });
+        if (!machines.length) {
+            return res.status(404).json({
+                success: false,
+                message: "No machines found for the specified centre."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Machines retrieved successfully.",
+            data: machines
+        });
+
+    } catch (error) {
+        console.error("Error fetching machines:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while processing your request."
+        });
+    }
+};
+
+
 module.exports = {
     createMachine,
-    getMachines
+    getMachines,
+    getMachinesByCentre
 };

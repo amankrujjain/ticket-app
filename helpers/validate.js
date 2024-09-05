@@ -207,9 +207,6 @@ exports.machineValidator = [
 ];
 
 exports.createTicketValidator = [
-    check("description")
-        .notEmpty().withMessage("Description is required")
-        .isString().withMessage("Description must be a string"),
     check("reasonId")
         .notEmpty().withMessage("Reason ID is required")
         .isMongoId().withMessage("Invalid Reason ID"),

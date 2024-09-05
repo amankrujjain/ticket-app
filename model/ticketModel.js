@@ -26,7 +26,6 @@ const ticketSchema = new mongoose.Schema({
     centre: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "centre",
-        required: true
     },
     created_on: {
         type: Date,

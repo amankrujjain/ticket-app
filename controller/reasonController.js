@@ -69,6 +69,35 @@ const getReason = async(_,res)=>{
      };
 };
 
+const getReasonsByIssueId = async (req, res) => {
+    try {
+        const { id } = req.params; // Get issueId from request parameters
+
+        // Find all reasons where the issue matches the provided issueId
+        const reasons = await Reason.find({ issue: id }).populate('issue');
+
+        if (!reasons.length) {
+            return res.status(404).json({
+                success: false,
+                message: "No reasons found for the specified issue",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: reasons,
+        });
+
+    } catch (error) {
+        console.error("Error occurred while fetching reasons:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching the reasons.",
+        });
+    }
+};
+
+
 const getReasonById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -230,6 +259,7 @@ module.exports = {
     createReason,
     getReason,
     getReasonById,
+    getReasonsByIssueId,
     updateReason,
     deleteReason
 }

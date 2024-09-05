@@ -7,8 +7,10 @@ const Centre = require("../model/centreModel");
 
 const createTicket = async (req, res) => {
     try {
-        console.log("User object:", req.user);  // Debugging step
+        // Log the user object for debugging
+        console.log("User object:", req.user);
 
+        // Handle validation errors
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({
@@ -18,8 +20,9 @@ const createTicket = async (req, res) => {
             });
         }
 
-        const { description, issueId, reasonId, machineId, centre, created_on, status } = req.body;
-        const userId = req.user?.id;  // Check if req.user is defined
+        const { description, issueId, reasonId, machineId, created_on, status = "open" } = req.body; // Default description and status
+        const userId = req.user?.id;  // Get the authenticated user ID
+        const centreId = req.user?.centre?._id; // Get the center ID from user data
 
         if (!userId) {
             return res.status(401).json({
@@ -28,6 +31,7 @@ const createTicket = async (req, res) => {
             });
         }
 
+        // Fetch related objects from the database
         const issueObj = await Issue.findById(issueId);
         if (!issueObj) {
             return res.status(404).json({
@@ -50,25 +54,28 @@ const createTicket = async (req, res) => {
                 success: false,
                 message: "Invalid machine provided"
             });
-        };
+        }
 
-        const centreObj = await Centre.findById(centre)
+        // Use the current date if created_on is not provided
+        const ticketCreationDate = created_on ? new Date(created_on) : new Date();
 
-        // Calculate the generatedDate based on tat and created_on
-        
-        // Create the new ticket
+        // Create the new ticket object
         const newTicket = new Ticket({
             description,
             issue: issueObj._id,
             reason: reasonObj._id,
             machine: machineObj._id,
-            centre: centreObj._id,
-            user:userId,
-            status
+            centre: centreId,  // Use center from req.user
+            user: userId,
+            status,
+            created_on: ticketCreationDate // Assign the created date
         });
-        
-        const generatedDate = new Date(newTicket.created_on);
-        newTicket.generatedDate = generatedDate.setDate(generatedDate.getDate() + reasonObj.tat);
+
+        // Calculate the generatedDate based on the reason's TAT
+        newTicket.generatedDate = new Date(ticketCreationDate);
+        newTicket.generatedDate.setDate(newTicket.generatedDate.getDate() + reasonObj.tat);
+
+        // Save the new ticket to the database
         await newTicket.save();
 
         return res.status(201).json({
@@ -80,10 +87,12 @@ const createTicket = async (req, res) => {
         console.log("Error occurred while creating the ticket:", error);
         return res.status(500).json({
             success: false,
-            message: "An unexpected error occurred while creating the ticket"
+            message: "An unexpected error occurred while creating the ticket",
+            error: error.message
         });
     }
 };
+
 
 
 const getTickets = async (req, res) => {

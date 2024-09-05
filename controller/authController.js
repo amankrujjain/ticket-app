@@ -104,7 +104,7 @@ const loginUser = async (req,res)=>{
                 { path: 'state' },
                 { path: 'city' }
             ]
-        });;
+        });
 
         // console.log("User role:", user.role)
 

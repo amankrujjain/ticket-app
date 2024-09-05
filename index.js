@@ -28,15 +28,17 @@ app.use(helmet());
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (origin === process.env.FRONTEND_URL || !origin) {
-      // Allow localhost:3000 or undefined origins (like Postman)
+    const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:3000'];
+    if (allowedOrigins.includes(origin) || !origin) {  // Allow if origin is in allowedOrigins or if it's undefined (like from Postman)
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true,
+  credentials: true,  // Allow credentials (cookies, etc.)
 };
+
+app.use(cors(corsOptions));
 app.use(
   cors(corsOptions)
 );
