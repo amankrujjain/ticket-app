@@ -4,6 +4,10 @@ const ticketSchema = new mongoose.Schema({
     description: {
         type: String,
     },
+    ticket_id:{
+        type:String,
+        unique: true
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

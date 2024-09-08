@@ -83,81 +83,86 @@ const registerUser = async(req,res)=>{
 
 // Login
 
-const loginUser = async (req,res)=>{
+const loginUser = async (req, res) => {
     try {
+        // Validate request body errors
         const errors = validationResult(req);
-        if(!errors.isEmpty()){
+        if (!errors.isEmpty()) {
             return res.status(400).json({
-                success:false,
-                message: "validation failed",
-                errors:errors.array()
-            })
-        };
+                success: false,
+                message: "Validation failed",
+                errors: errors.array()
+            });
+        }
 
-        const {identifier, password} = req.body;
+        const { identifier, password } = req.body;
 
+        // Fetch the user based on email or employee_id
         const user = await User.findOne({
-            $or: [{email:identifier}, {employee_id: identifier}]
-        }).populate('role').populate({
+            $or: [{ email: identifier }, { employee_id: identifier }]
+        }).populate('role')
+        .populate({
             path: 'centre',
             populate: [
                 { path: 'state' },
                 { path: 'city' }
             ]
         });
-
-        // console.log("User role:", user.role)
-
-        if(!user){
+        console.log(user)
+        // If no user found, return an error
+        if (!user) {
             return res.status(400).json({
-                success:false,
-                message:"Invalid Employee ID/ Email or password"
+                success: false,
+                message: "Invalid Employee ID/Email or password"
             });
-        };
+        }
 
-        // Matching the password
-
+        // Compare the password provided with the stored hash
         const isMatch = await bcrypt.compare(password, user.password);
-        if(!isMatch){
+        if (!isMatch) {
             return res.status(401).json({
-                success:false,
-                message:"Invalid employee ID/email or password"
+                success: false,
+                message: "Invalid Employee ID/Email or password"
             });
-        };
+        }
+
+        // Update the is_logged_in status to true
         user.is_logged_in = true;
-        await user.save()
-        // generating token if user is found or logged in with correct credentials
+        await user.save();
+
+        // Generate a JWT token
         const token = generateToken(user);
 
-        // setting token in cookies
-        res.cookie("token", token,{
+        // Set the JWT token as a secure, httpOnly cookie
+        res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production" || true, //Checking it to true when on production
-            maxAge: 2 * 60 * 60* 1000, // 2hours
+            secure: process.env.NODE_ENV === "production", // Ensure it's secure only in production
+            maxAge: 10 * 60 * 60 * 1000, // 2 hours
         });
 
+        // Return success response with user details
         return res.status(200).json({
             success: true,
-            message: "LoggedIn successfully",
-            user:{
+            message: "Logged in successfully",
+            user: {
                 id: user._id,
-                phone:user.phone,
+                phone: user.phone,
                 name: user.name,
-                email:user.email,
+                email: user.email,
                 employee_id: user.employee_id,
                 role: user.role,
                 centre: user.centre,
                 token: token,
                 is_logged_in: user.is_logged_in
-            },
+            }
         });
     } catch (error) {
         console.log(error);
         return res.status(500).json({
             success: false,
-            message:" An error occured while processing your request",
+            message: "An error occurred while processing your request"
         });
-    };
+    }
 };
 
 const logoutUser = async (req, res) => {

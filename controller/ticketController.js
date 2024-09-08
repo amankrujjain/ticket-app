@@ -1,14 +1,47 @@
+const mongoose = require('mongoose')
+
 const Ticket = require("../model/ticketModel");
 const Reason = require("../model/reasonModel");
 const Machine = require("../model/machineModel");
 const { validationResult } = require("express-validator");
 const Issue = require("../model/issueModel");
+const User = require('../model/userModel');
 const Centre = require("../model/centreModel");
 
 const createTicket = async (req, res) => {
     try {
         // Log the user object for debugging
-        console.log("User object:", req.user);
+        console.log("User object from JWT:", req.user);
+
+        // Fetch the full user object from the database
+        const userId = req.user?.id;
+        const user = await User.findById(userId)
+            .populate({
+                path: 'centre',
+                populate: [
+                    { path: 'state' },
+                    { path: 'city' }
+                ]
+            });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // Now you can use `user.centre._id` for the centre
+        const centreId = user.centre?._id;
+
+        console.log("Centre ID from user:", centreId);
+
+        if (!centreId) {
+            return res.status(400).json({
+                success: false,
+                message: "User's centre is missing"
+            });
+        }
 
         // Handle validation errors
         const errors = validationResult(req);
@@ -21,13 +54,12 @@ const createTicket = async (req, res) => {
         }
 
         const { description, issueId, reasonId, machineId, created_on, status = "open" } = req.body; // Default description and status
-        const userId = req.user?.id;  // Get the authenticated user ID
-        const centreId = req.user?.centre?._id; // Get the center ID from user data
 
-        if (!userId) {
-            return res.status(401).json({
+        // Validate that IDs are valid MongoDB ObjectIds
+        if (!mongoose.Types.ObjectId.isValid(issueId) || !mongoose.Types.ObjectId.isValid(reasonId) || !mongoose.Types.ObjectId.isValid(machineId)) {
+            return res.status(400).json({
                 success: false,
-                message: "User not authenticated"
+                message: "Invalid Issue, Reason, or Machine ID"
             });
         }
 
@@ -55,17 +87,24 @@ const createTicket = async (req, res) => {
                 message: "Invalid machine provided"
             });
         }
-
         // Use the current date if created_on is not provided
         const ticketCreationDate = created_on ? new Date(created_on) : new Date();
+
+        // Generate a unique ticket ID with "VC" prefix, day, and month
+        const date = new Date();
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const randomNum = Math.floor(10 + Math.random() * 90); // Generate a 4-digit random number
+        const ticketId = `VC${day}${month}${randomNum}`;
 
         // Create the new ticket object
         const newTicket = new Ticket({
             description,
+            ticket_id: ticketId, // Assign the generated ticket ID
             issue: issueObj._id,
             reason: reasonObj._id,
             machine: machineObj._id,
-            centre: centreId,  // Use center from req.user
+            centre: centreId,
             user: userId,
             status,
             created_on: ticketCreationDate // Assign the created date
@@ -121,6 +160,7 @@ const getTicketById = async(req,res)=>{
         const {id} = req.params;
 
         const ticket = await Ticket.findById(id)
+        .populate("issue")
         .populate("reason")
         .populate("machine")
         .populate("user")
@@ -140,7 +180,7 @@ const getTicketById = async(req,res)=>{
     } catch (error) {
         console.log("Error occured while searching ticket:", error.message);
         return res.status(500).json({
-            success: true,
+            success: false,
             message:"An unexpected error occured while processing your request"
         })
     }
@@ -173,7 +213,9 @@ const getOpenTicketsForUser = async (req, res) => {
                     { path: 'city' }
                 ]
             })  // Populate center details
-            .populate('stage');   // Populate stage details
+            .populate('stage')
+               // Populate stage details
+            .sort({created_on: -1})
 
         if (openTickets.length === 0) {
             return res.status(404).json({
