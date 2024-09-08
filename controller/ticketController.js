@@ -144,8 +144,112 @@ const getTicketById = async(req,res)=>{
             message:"An unexpected error occured while processing your request"
         })
     }
-}
+};
 
+const getOpenTicketsForUser = async (req, res) => {
+    try {
+        // Fetch the user ID from the request body
+        console.log(req.user)
+        const userId = req.user?.id;
+        console.log(userId)
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "User ID is required to fetch tickets."
+            });
+        }
+
+        // Fetch open tickets associated with the given user ID
+        const openTickets = await Ticket.find({ user: userId, status: 'open' })
+            .populate('issue')    // Populate issue details
+            .populate('reason')   // Populate reason details
+            .populate('machine')  // Populate machine details
+            .populate('user')
+            .populate({
+                path: 'centre',
+                populate: [
+                    { path: 'state' },
+                    { path: 'city' }
+                ]
+            })  // Populate center details
+            .populate('stage');   // Populate stage details
+
+        if (openTickets.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No open tickets found for the user."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Open tickets fetched successfully.",
+            data: openTickets
+        });
+    } catch (error) {
+        console.log("Error while fetching open tickets:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching open tickets."
+        });
+    }
+};
+const getClosedTicketsForUser = async (req, res) => {
+    try {
+        // Log user object to ensure it contains the correct user ID
+        console.log("User Object:", req.user);
+
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "User ID is required to fetch tickets."
+            });
+        }
+
+        // Log userId before querying the database
+        console.log("Fetching closed tickets for user:", userId);
+
+        // Fetch closed tickets associated with the user ID and log the query
+        const closedTickets = await Ticket.find({ user: userId, status: 'closed' })
+            .populate('issue')
+            .populate('reason')
+            .populate('machine')
+            .populate('user')
+            .populate({
+                path: 'centre',
+                populate: [
+                    { path: 'state' },
+                    { path: 'city' }
+                ]
+            })
+            .populate('stage');
+
+        // Log the result of the query to inspect the data returned
+        console.log("Closed Tickets Found:", closedTickets);
+
+        if (closedTickets.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No closed tickets found for the user."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Closed tickets fetched successfully.",
+            data: closedTickets
+        });
+    } catch (error) {
+        console.log("Error while fetching closed tickets:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching closed tickets."
+        });
+    }
+};
 const closeTicket = async (req, res) => {
     try {
         const { id } = req.params; // Assuming the ticket ID is passed as a URL parameter
@@ -190,5 +294,7 @@ module.exports = {
     createTicket,
     getTickets,
     getTicketById,
-    closeTicket
+    closeTicket,
+    getOpenTicketsForUser,
+    getClosedTicketsForUser
 };

@@ -167,8 +167,9 @@ const logoutUser = async (req, res) => {
         // Clear the token cookie
         res.clearCookie("token", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production" || true, // Same settings as when the token is set
-            sameSite: 'Strict'
+            secure: process.env.NODE_ENV === "production", // Same settings as when the token is set
+            sameSite: 'Strict',
+            path:'/'
         });
 
         await User.findByIdAndUpdate(userId, {is_logged_in: false})
