@@ -11,6 +11,6 @@ router.get("/tickets", getTickets);
 router.get("/get-ticket/:id", getTicketById);
 router.post('/my-open-tickets', authMiddleware(), getOpenTicketsForUser);
 router.post('/my-closed-tickets', authMiddleware(), getClosedTicketsForUser);
-router.patch("/tickets/:id/close", authMiddleware, closeTicket); // New route to close a ticket
+router.patch("/tickets/:id/close", authMiddleware(), closeTicket); // New route to close a ticket
 
 module.exports = router;
