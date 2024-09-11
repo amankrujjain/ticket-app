@@ -73,12 +73,12 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 mongoose
-  .connect(process.env.MONGODB_URL)
+  .connect(process.env.MONGODB_ATLAS_URL || process.env.MONGDB_URL)
   .then(() => {
-    console.log("Mongo DB connected");
+    console.log("MongoDB connected");
   })
   .catch((error) => {
-    console.log("MongoDB connection :", error);
+    console.log("MongoDB connection error:", error);
   });
 
 app.listen(PORT, () => {
