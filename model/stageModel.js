@@ -10,6 +10,10 @@ const stageSchema = new mongoose.Schema({
         type: Date,
         default: Date.now()
     },
+    assign_date:{
+        type:String
+    }
+    ,
     is_active:{
         type: Boolean,
         default: true,

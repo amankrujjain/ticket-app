@@ -62,7 +62,7 @@ const registerUser = async(req,res)=>{
             employee_id,
             centre: centreObj,
             password:hashedPassword,
-            role: roleObj._id
+            role: roleObj._id,
         });
         await newUser.save();
         await newUser.populate('role')

@@ -12,6 +12,7 @@ const machineRoute = require("./routes/machineRoute");
 const ticketRoute = require("./routes/ticketRoute");
 const stageRoute = require('./routes/stageRoute');
 const changeStageRoute = require('./routes/changeStageRoute');
+const userRoute = require('./routes/userRoute')
 
 const path = require("path");
 const cors = require("cors");
@@ -61,6 +62,7 @@ app.use("/api", machineRoute);
 app.use("/api", ticketRoute);
 app.use('/api', stageRoute);
 app.use('/api', changeStageRoute);
+app.use('/api', userRoute)
 
 // Error handling middleware for unhandles errors
 app.use((err, req, res, next) => {
