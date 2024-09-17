@@ -29,14 +29,15 @@ app.use(cookieParser());
 app.use(helmet());
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:3000'];
-    if (allowedOrigins.includes(origin) || !origin) {  // Allow if origin is in allowedOrigins or if it's undefined (like from Postman)
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  // origin: (origin, callback) => {
+  //   const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:3000'];
+  //   if (allowedOrigins.includes(origin) || !origin) {  // Allow if origin is in allowedOrigins or if it's undefined (like from Postman)
+  //     callback(null, true);
+  //   } else {
+  //     callback(new Error("Not allowed by CORS"));
+  //   }
+  // },
+  origin:"*",
   credentials: true,  // Allow credentials (cookies, etc.)
 };
 
