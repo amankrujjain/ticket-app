@@ -16,6 +16,14 @@ const stageTrackingSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
+    description:{
+        type: String,
+        required: false
+    },
+    next_action_date:{
+        type: Date,
+    }
+    ,
     changed_on: {
         type: Date,
         default: Date.now

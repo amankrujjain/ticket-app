@@ -40,7 +40,7 @@ const ticketSchema = new mongoose.Schema({
     },
     stage: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Stage"
+        ref: "stage",
     },
     is_active: {
         type: Boolean,

@@ -7,10 +7,11 @@ const { validationResult } = require("express-validator");
 const Issue = require("../model/issueModel");
 const User = require('../model/userModel');
 const Centre = require("../model/centreModel");
+const stageModel = require('../model/stageModel');
+const StageTracking = require('../model/stageTrackingModel')
 
 const createTicket = async (req, res) => {
     try {
-        // Log the user object for debugging
         console.log("User object from JWT:", req.user);
 
         // Fetch the full user object from the database
@@ -31,7 +32,6 @@ const createTicket = async (req, res) => {
             });
         }
 
-        // Now you can use `user.centre._id` for the centre
         const centreId = user.centre?._id;
 
         console.log("Centre ID from user:", centreId);
@@ -53,7 +53,7 @@ const createTicket = async (req, res) => {
             });
         }
 
-        const { description, issueId, reasonId, machineId, created_on, status = "open" } = req.body; // Default description and status
+        const { description, issueId, reasonId, machineId, created_on, status = "open" } = req.body;
 
         // Validate that IDs are valid MongoDB ObjectIds
         if (!mongoose.Types.ObjectId.isValid(issueId) || !mongoose.Types.ObjectId.isValid(reasonId) || !mongoose.Types.ObjectId.isValid(machineId)) {
@@ -78,6 +78,15 @@ const createTicket = async (req, res) => {
                 success: false,
                 message: "Invalid reason provided"
             });
+        };
+
+        // Find default stage
+        const defaultStage = await stageModel.findOne({ stage_name: "raised" });
+        if (!defaultStage) {
+            return res.status(404).json({
+                success: false,
+                message: "Default stage not found"
+            });
         }
 
         const machineObj = await Machine.findById(machineId);
@@ -87,6 +96,7 @@ const createTicket = async (req, res) => {
                 message: "Invalid machine provided"
             });
         }
+
         // Use the current date if created_on is not provided
         const ticketCreationDate = created_on ? new Date(created_on) : new Date();
 
@@ -94,20 +104,21 @@ const createTicket = async (req, res) => {
         const date = new Date();
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
-        const randomNum = Math.floor(10 + Math.random() * 90); // Generate a 4-digit random number
+        const randomNum = Math.floor(10 + Math.random() * 90);
         const ticketId = `VC${day}${month}${randomNum}`;
 
         // Create the new ticket object
         const newTicket = new Ticket({
             description,
-            ticket_id: ticketId, // Assign the generated ticket ID
+            ticket_id: ticketId,
             issue: issueObj._id,
             reason: reasonObj._id,
             machine: machineObj._id,
             centre: centreId,
             user: userId,
             status,
-            created_on: ticketCreationDate // Assign the created date
+            stage: defaultStage._id,
+            created_on: ticketCreationDate
         });
 
         // Calculate the generatedDate based on the reason's TAT
@@ -117,10 +128,24 @@ const createTicket = async (req, res) => {
         // Save the new ticket to the database
         await newTicket.save();
 
+        // Now create an initial stage tracking entry
+        const stageTracking = new StageTracking({
+            ticket: newTicket._id,
+            stage: defaultStage._id,
+            changed_by: userId,  // Assuming the user creating the ticket is the one who set the stage
+            changed_on: new Date()  // Current date for stage change
+        });
+
+        // Save the stage tracking record
+        await stageTracking.save();
+
         return res.status(201).json({
             success: true,
-            message: "Ticket created successfully",
-            data: newTicket
+            message: "Ticket created successfully with initial stage tracking",
+            data: {
+                ticket: newTicket,
+                stageTracking: stageTracking
+            }
         });
     } catch (error) {
         console.log("Error occurred while creating the ticket:", error);
@@ -131,8 +156,6 @@ const createTicket = async (req, res) => {
         });
     }
 };
-
-
 
 const getTickets = async (req, res) => {
     try {
