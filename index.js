@@ -51,6 +51,9 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "../client/build")));
 
 // Routes
+app.get("/check", (req,res)=>{
+  res.send("This is health check")
+})
 app.use("/api", authRoute);
 app.use("/api", roleRoute);
 app.use("/api", stateRoute);
